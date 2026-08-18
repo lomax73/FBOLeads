@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Elimina sito — FBOLeads{% endblock %}
+
+{% block content %}
+<h1>Elimina sito</h1>
+
+<div class="card">
+    <p>Sei sicuro di voler eliminare <strong>{{ sito.nome }}</strong>?</p>
+    <p class="muted">I contatti già raccolti non verranno eliminati, ma perderanno il collegamento a questo sito.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Sì, elimina</button>
+        <a class="btn btn-secondary" href="{% url 'sito-list' %}">Annulla</a>
+    </form>
+</div>
+{% endblock %}

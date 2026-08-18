@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Elimina contatto — FBOLeads{% endblock %}
+
+{% block content %}
+<h1>Elimina contatto</h1>
+
+<div class="card">
+    <p>Sei sicuro di voler eliminare <strong>{{ lead.nome }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Sì, elimina</button>
+        <a class="btn btn-secondary" href="{% url 'lead-detail' lead.pk %}">Annulla</a>
+    </form>
+</div>
+{% endblock %}

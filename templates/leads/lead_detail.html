@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lead.nome }} — FBOLeads{% endblock %}
+
+{% block content %}
+<h1>{{ lead.nome }}</h1>
+
+<div class="card">
+    <p><span class="badge badge-{{ lead.stato }}">{{ lead.get_stato_display }}</span></p>
+    <p><strong>Email:</strong> {{ lead.email|default:"—" }}</p>
+    <p><strong>Telefono:</strong> {{ lead.telefono|default:"—" }}</p>
+    <p><strong>Azienda:</strong> {{ lead.azienda|default:"—" }}</p>
+    <p><strong>Sito di provenienza:</strong> {{ lead.sito|default:"—" }}{% if lead.sorgente %} ({{ lead.sorgente.nome }}){% endif %}</p>
+    <p><strong>Assegnato a:</strong> {{ lead.assegnato_a|default:"—" }}</p>
+    <p><strong>Consenso dati personali:</strong>
+        {% if lead.consenso_dati %}Sì{% if lead.consenso_dati_il %} (il {{ lead.consenso_dati_il|date:"d/m/Y H:i" }}){% endif %}{% else %}No{% endif %}
+    </p>
+    <p><strong>Ricevuto il:</strong> {{ lead.creato_il|date:"d/m/Y H:i" }}</p>
+    <p><strong>Ultima modifica:</strong> {{ lead.aggiornato_il|date:"d/m/Y H:i" }}</p>
+</div>
+
+{% if lead.messaggio %}
+<div class="card">
+    <h2>Messaggio</h2>
+    <p>{{ lead.messaggio|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+{% if lead.dati_extra %}
+<div class="card">
+    <h2>Dati aggiuntivi dal form</h2>
+    <table>
+        <thead><tr><th>Campo</th><th>Valore</th></tr></thead>
+        <tbody>
+            {% for key, value in lead.dati_extra.items %}
+            <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<p>
+    <a class="btn" href="{% url 'lead-update' lead.pk %}">Modifica</a>
+    <a class="btn btn-danger" href="{% url 'lead-delete' lead.pk %}">Elimina</a>
+    <a class="btn btn-secondary" href="{% url 'lead-list' %}">Torna all'elenco</a>
+</p>
+{% endblock %}

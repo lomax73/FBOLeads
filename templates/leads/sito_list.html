@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Siti — FBOLeads{% endblock %}
+
+{% block content %}
+<h1>Siti</h1>
+
+<p><a class="btn" href="{% url 'sito-create' %}">Nuovo sito</a></p>
+
+{% if siti %}
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Dominio</th>
+            <th>Attivo</th>
+            <th>Campi</th>
+            <th>Contatti</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sito in siti %}
+        <tr>
+            <td>{{ sito.nome }}</td>
+            <td>{{ sito.dominio|default:"—" }}</td>
+            <td>{% if sito.attivo %}✓{% else %}—{% endif %}</td>
+            <td>{{ sito.campi.count }}</td>
+            <td>{{ sito.lead.count }}</td>
+            <td>
+                <a href="{% url 'sito-update' sito.pk %}">Modifica</a>
+                · <a href="{% url 'sito-delete' sito.pk %}">Elimina</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty-state">Nessun sito configurato. Aggiungine uno con il pulsante qui sopra.</p>
+{% endif %}
+{% endblock %}

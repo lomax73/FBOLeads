@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Contatti — FBOLeads{% endblock %}
+
+{% block content %}
+<h1>Contatti</h1>
+
+<div class="toolbar">
+    <form method="get">
+        <select name="stato" onchange="this.form.submit()">
+            <option value="">Tutti gli stati</option>
+            {% for value, label in stati %}
+            <option value="{{ value }}" {% if stato_attivo == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="q" value="{{ q }}" placeholder="Cerca nome, email, telefono…">
+        <button class="btn" type="submit">Filtra</button>
+    </form>
+</div>
+
+{% if leads %}
+<table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Email / Telefono</th>
+            <th>Sito</th>
+            <th>Stato</th>
+            <th>Consenso</th>
+            <th>Assegnato a</th>
+            <th>Ricevuto</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lead in leads %}
+        <tr>
+            <td><a href="{% url 'lead-detail' lead.pk %}">{{ lead.nome }}</a>{% if lead.azienda %}<div class="muted">{{ lead.azienda }}</div>{% endif %}</td>
+            <td>
+                {% if lead.email %}{{ lead.email }}<br>{% endif %}
+                {% if lead.telefono %}{{ lead.telefono }}{% endif %}
+            </td>
+            <td>{{ lead.sito|default:"—" }}</td>
+            <td><span class="badge badge-{{ lead.stato }}">{{ lead.get_stato_display }}</span></td>
+            <td>{% if lead.consenso_dati %}✓{% else %}—{% endif %}</td>
+            <td>{{ lead.assegnato_a|default:"—" }}</td>
+            <td class="muted">{{ lead.creato_il|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+<div class="toolbar">
+    {% if page_obj.has_previous %}<a class="btn btn-secondary" href="?{% if q %}q={{ q }}&{% endif %}{% if stato_attivo %}stato={{ stato_attivo }}&{% endif %}page={{ page_obj.previous_page_number }}">← Precedente</a>{% endif %}
+    <span class="muted">Pagina {{ page_obj.number }} di {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="btn btn-secondary" href="?{% if q %}q={{ q }}&{% endif %}{% if stato_attivo %}stato={{ stato_attivo }}&{% endif %}page={{ page_obj.next_page_number }}">Successiva →</a>{% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<p class="empty-state">Nessun contatto trovato.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,127 @@
+{% load static %}<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}FBOLeads{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/fboleads.svg' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azure: #27a5de;
+            --azure-dark: #1c85b8;
+            --azure-tint: #eaf6fc;
+            --navy: #123247;
+            --ink: #1f2937;
+            --paper: #f8fafc;
+            --border: #e2e8f0;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: var(--font-body); color: var(--ink); background: var(--paper); margin: 0; min-height: 100vh; }
+        h1, h2, h3 { font-family: var(--font-display); color: var(--navy); margin: 0 0 1rem; }
+        a { color: var(--azure-dark); }
+
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2rem; background: var(--navy); color: #fff;
+        }
+        .topbar .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: #fff; font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; }
+        .topbar .brand img { width: 32px; height: 32px; border-radius: 50%; background: #fff; }
+        .topbar .nav { display: flex; align-items: center; gap: 1rem; }
+        .topbar .nav a { color: #cbd8e2; text-decoration: none; font-size: 0.9rem; }
+        .topbar .nav a:hover { color: #fff; }
+        .topbar .nav .btn { background: var(--azure); color: #fff; padding: 0.4rem 0.8rem; border-radius: 8px; }
+        .topbar .nav .btn:hover { background: var(--azure-dark); }
+        .topbar .user-box { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: #cbd8e2; }
+        .topbar .user-box form { margin: 0; }
+        .topbar .user-box button { background: none; border: none; color: #cbd8e2; font-size: 0.85rem; cursor: pointer; padding: 0; text-decoration: underline; }
+
+        .main { padding: 2rem 2.5rem; }
+        .main-inner { max-width: 1100px; margin: 0 auto; }
+
+        .messages { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+        .messages li { padding: 0.6rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .messages .success { background: #dcfce7; color: #166534; }
+        .messages .error { background: #fee2e2; color: #991b1b; }
+
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 2px rgba(18,50,71,0.06); }
+        th, td { text-align: left; padding: 0.6rem 0.85rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th { font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; background: #f1f5f9; }
+
+        .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; color: #fff; }
+        .badge-nuovo { background: var(--azure); }
+        .badge-contattato { background: #e0a213; }
+        .badge-archiviato { background: #64748b; }
+
+        .btn {
+            display: inline-block; padding: 0.5rem 1rem; border-radius: 8px;
+            background: var(--azure); color: #fff; text-decoration: none;
+            border: none; cursor: pointer; font-size: 0.95rem; font-weight: 600;
+            font-family: var(--font-body);
+        }
+        .btn:hover { background: var(--azure-dark); }
+        .btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+        .btn-secondary { background: #fff; color: var(--navy); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--azure); }
+        .btn-danger { background: #fff; color: #991b1b; border: 1px solid #fecaca; }
+        .btn-danger:hover { border-color: #991b1b; }
+
+        .toolbar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .toolbar form { display: flex; gap: 0.5rem; align-items: center; }
+        .toolbar input, .toolbar select { width: auto; padding: 0.5rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-body); font-size: 0.9rem; }
+
+        form p { margin: 0.6rem 0; }
+        label { display: block; font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem; color: var(--navy); }
+        input, textarea, select {
+            width: 100%; padding: 0.5rem 0.6rem; box-sizing: border-box;
+            border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-body); font-size: 0.95rem;
+        }
+        input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--azure); outline-offset: 1px; }
+
+        .muted { color: #64748b; }
+        .empty-state { color: #64748b; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<header class="topbar">
+    <a class="brand" href="{% url 'lead-list' %}">
+        <img src="{% static 'img/fboleads.svg' %}" alt="">
+        FBOLeads
+    </a>
+    <div class="nav">
+        <a href="{% url 'lead-list' %}">Contatti</a>
+        <a href="{% url 'sito-list' %}">Siti</a>
+        <a class="btn" href="{% url 'lead-create' %}">Nuovo contatto</a>
+        {% if PORTAL_PUBLIC_URL %}<a href="{{ PORTAL_PUBLIC_URL }}" target="_blank" rel="noopener">Portale FBO</a>{% endif %}
+    </div>
+    <div class="user-box">
+        <span>{{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Esci</button>
+        </form>
+    </div>
+</header>
+{% endif %}
+<div class="main">
+    <div class="main-inner">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+</body>
+</html>

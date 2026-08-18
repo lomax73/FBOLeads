@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form.instance.pk %}Modifica sito{% else %}Nuovo sito{% endif %} — FBOLeads{% endblock %}
+
+{% block content %}
+<h1>{% if form.instance.pk %}Modifica sito{% else %}Nuovo sito{% endif %}</h1>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h2>Campi del form (template dati)</h2>
+        <p class="muted">Per ogni campo del form del sito indica il nome esatto (key) e dove deve finire nel contatto.</p>
+        {{ campi_formset.management_form }}
+        {% for f in campi_formset %}
+        <div class="card" style="margin-bottom: 0.75rem;">
+            {{ f.as_p }}
+        </div>
+        {% endfor %}
+
+        <p>
+            <button class="btn" type="submit">Salva</button>
+            <a class="btn btn-secondary" href="{% url 'sito-list' %}">Annulla</a>
+        </p>
+    </form>
+</div>
+{% endblock %}
