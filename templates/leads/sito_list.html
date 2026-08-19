@@ -17,6 +17,8 @@
             <th>Campi</th>
             <th>Risposta auto</th>
             <th>Contatti</th>
+            <th>Primo contatto</th>
+            <th>Ultimo contatto</th>
             <th></th>
         </tr>
     </thead>
@@ -29,6 +31,8 @@
             <td>{{ sito.campi.count }}</td>
             <td>{% if sito.risposta_automatica.attivo %}✓{% else %}—{% endif %}</td>
             <td>{{ sito.lead.count }}</td>
+            <td>{{ sito.primo_contatto|date:"d/m/Y H:i"|default:"—" }}</td>
+            <td>{{ sito.ultimo_contatto|date:"d/m/Y H:i"|default:"—" }}</td>
             <td>
                 <a href="{% url 'sito-update' sito.pk %}">Modifica</a>
                 · <a href="{% url 'sito-delete' sito.pk %}">Elimina</a>

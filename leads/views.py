@@ -5,7 +5,7 @@ import threading
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Max, Min, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -90,7 +90,10 @@ class SitoListView(LoginRequiredMixin, ListView):
     context_object_name = 'siti'
 
     def get_queryset(self):
-        return Sito.objects.prefetch_related('campi').select_related('risposta_automatica')
+        return Sito.objects.prefetch_related('campi').select_related('risposta_automatica').annotate(
+            primo_contatto=Min('lead__creato_il'),
+            ultimo_contatto=Max('lead__creato_il'),
+        )
 
 
 class SitoCreateView(LoginRequiredMixin, CreateView):
