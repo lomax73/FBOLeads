@@ -31,6 +31,14 @@
         </p>
         <div class="card" style="margin-bottom: 0.75rem;">
             {{ risposta_form.as_p }}
+            <p>
+                <button type="button" class="btn btn-secondary" id="test-email-btn">Verifica impostazioni email</button>
+                <span id="test-email-result" class="muted"></span>
+            </p>
+            <p class="muted" style="font-size: 0.85rem;">
+                Invia una email di prova all'indirizzo mittente indicato sopra, usando i
+                valori attualmente scritti nel form (non serve salvare prima).
+            </p>
         </div>
 
         <p>
@@ -39,4 +47,50 @@
         </p>
     </form>
 </div>
+
+<script>
+(function () {
+    var btn = document.getElementById('test-email-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var result = document.getElementById('test-email-result');
+        var field = function (id) {
+            var el = document.getElementById(id);
+            return el ? el.value : '';
+        };
+        result.style.color = '';
+        result.textContent = 'Verifica in corso…';
+
+        var data = new FormData();
+        data.append('smtp_host', field('id_smtp_host'));
+        data.append('smtp_port', field('id_smtp_port'));
+        data.append('smtp_user', field('id_smtp_user'));
+        data.append('smtp_password', field('id_smtp_password'));
+        var tlsEl = document.getElementById('id_smtp_use_tls');
+        data.append('smtp_use_tls', tlsEl && tlsEl.checked ? 'on' : '');
+        data.append('mittente_email', field('id_mittente_email'));
+        data.append('sito_id', '{{ form.instance.pk|default_if_none:"" }}');
+
+        fetch('{% url "sito-test-email" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value},
+            body: data,
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (json) {
+                if (json.ok) {
+                    result.style.color = '#166534';
+                    result.textContent = 'OK — email di prova inviata a ' + field('id_mittente_email') + '.';
+                } else {
+                    result.style.color = '#991b1b';
+                    result.textContent = 'Errore: ' + json.errore;
+                }
+            })
+            .catch(function () {
+                result.style.color = '#991b1b';
+                result.textContent = 'Errore di rete durante la verifica.';
+            });
+    });
+})();
+</script>
 {% endblock %}

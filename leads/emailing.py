@@ -75,3 +75,33 @@ def invia_risposta_automatica(lead_id):
         risposta_automatica_inviata_il=timezone.now(),
         risposta_automatica_errore='',
     )
+
+
+def verifica_smtp(host, port, user, password, use_tls, mittente_email):
+    """Verifica una configurazione SMTP connettendosi e inviando una email
+    di prova al mittente stesso. Ritorna (ok: bool, errore: str)."""
+    if not host or not mittente_email:
+        return False, 'Host SMTP e email mittente sono obbligatori.'
+
+    try:
+        server = smtplib.SMTP(host, port, timeout=10)
+        try:
+            if use_tls:
+                server.starttls()
+            server.login(user or mittente_email, password or '')
+
+            msg = MIMEText(
+                'Questa e\' una email di verifica delle impostazioni SMTP per la '
+                'risposta automatica di FBOLeads. Se la ricevi, la configurazione '
+                'e\' corretta.'
+            )
+            msg['From'] = mittente_email
+            msg['To'] = mittente_email
+            msg['Subject'] = 'FBOLeads — verifica impostazioni email'
+            server.send_message(msg)
+        finally:
+            server.quit()
+    except Exception as exc:
+        return False, str(exc)[:300]
+
+    return True, ''

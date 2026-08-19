@@ -13,6 +13,7 @@ urlpatterns = [
     path('siti/nuovo/', views.SitoCreateView.as_view(), name='sito-create'),
     path('siti/<int:pk>/modifica/', views.SitoUpdateView.as_view(), name='sito-update'),
     path('siti/<int:pk>/elimina/', views.SitoDeleteView.as_view(), name='sito-delete'),
+    path('siti/test-email/', views.sito_test_email, name='sito-test-email'),
 
     path('ingest/', views.lead_ingest, name='lead-ingest'),
 ]

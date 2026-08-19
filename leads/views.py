@@ -4,6 +4,7 @@ import threading
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Max, Min, Q
 from django.http import JsonResponse
@@ -11,11 +12,12 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
 )
 
-from .emailing import invia_risposta_automatica
+from .emailing import invia_risposta_automatica, verifica_smtp
 from .forms import CampoSitoFormSet, LeadForm, RispostaAutomaticaForm, SitoForm
 from .models import CampoSito, Lead, Sito
 
@@ -168,6 +170,37 @@ class SitoDeleteView(LoginRequiredMixin, DeleteView):
     def form_valid(self, form):
         messages.success(self.request, 'Sito eliminato.')
         return super().form_valid(form)
+
+
+@login_required
+@require_POST
+def sito_test_email(request):
+    """Verifica una configurazione SMTP (host/porta/utente/password/TLS)
+    inviando una email di prova al mittente stesso. Usata dal pulsante
+    "Verifica impostazioni email" nel form del Sito, prima ancora di
+    salvarlo: legge i valori correnti del form via fetch, non il DB.
+    Se la password è lasciata vuota e viene passato un sito già esistente,
+    riusa la password già salvata (stesso comportamento del form)."""
+    smtp_host = request.POST.get('smtp_host', '').strip()
+    smtp_port = request.POST.get('smtp_port', '').strip()
+    smtp_user = request.POST.get('smtp_user', '').strip()
+    smtp_password = request.POST.get('smtp_password', '')
+    smtp_use_tls = request.POST.get('smtp_use_tls') == 'on'
+    mittente_email = request.POST.get('mittente_email', '').strip()
+    sito_id = request.POST.get('sito_id', '').strip()
+
+    if not smtp_password and sito_id:
+        config = getattr(Sito.objects.filter(pk=sito_id).first(), 'risposta_automatica', None)
+        if config is not None:
+            smtp_password = config.smtp_password or ''
+
+    try:
+        smtp_port = int(smtp_port)
+    except ValueError:
+        smtp_port = 587
+
+    ok, errore = verifica_smtp(smtp_host, smtp_port, smtp_user, smtp_password, smtp_use_tls, mittente_email)
+    return JsonResponse({'ok': ok, 'errore': errore})
 
 
 def _sito_per_token(provided):
