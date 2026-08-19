@@ -1,4 +1,5 @@
 import json
+import secrets
 
 from django.conf import settings
 from django.contrib import messages
@@ -155,7 +156,7 @@ def _sito_per_token(provided):
             token = sito.ingest_token
         except Exception:
             continue
-        if token and token == provided:
+        if token and secrets.compare_digest(token, provided):
             return sito
     return None
 
@@ -181,7 +182,7 @@ def lead_ingest(request):
 
     if sito is None:
         global_token = getattr(settings, 'INGEST_TOKEN', '')
-        if not global_token or provided != global_token:
+        if not global_token or not secrets.compare_digest(provided, global_token):
             return JsonResponse({'detail': 'Non autorizzato.'}, status=403)
 
     if request.content_type == 'application/json':

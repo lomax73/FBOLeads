@@ -1,4 +1,5 @@
 import json
+import secrets
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -11,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 def _check_token(request):
     expected = getattr(settings, 'INTERNAL_API_TOKEN', '')
     provided = request.headers.get('Authorization', '')
-    if not expected or provided != f'Token {expected}':
+    if not expected or not secrets.compare_digest(provided, f'Token {expected}'):
         return False
     return True
 
