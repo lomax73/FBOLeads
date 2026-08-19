@@ -1,5 +1,6 @@
 import json
 import secrets
+import threading
 
 from django.conf import settings
 from django.contrib import messages
@@ -14,7 +15,8 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
 )
 
-from .forms import CampoSitoFormSet, LeadForm, SitoForm
+from .emailing import invia_risposta_automatica
+from .forms import CampoSitoFormSet, LeadForm, RispostaAutomaticaForm, SitoForm
 from .models import CampoSito, Lead, Sito
 
 
@@ -88,7 +90,7 @@ class SitoListView(LoginRequiredMixin, ListView):
     context_object_name = 'siti'
 
     def get_queryset(self):
-        return Sito.objects.prefetch_related('campi')
+        return Sito.objects.prefetch_related('campi').select_related('risposta_automatica')
 
 
 class SitoCreateView(LoginRequiredMixin, CreateView):
@@ -100,15 +102,21 @@ class SitoCreateView(LoginRequiredMixin, CreateView):
         ctx = super().get_context_data(**kwargs)
         if self.request.POST:
             ctx['campi_formset'] = CampoSitoFormSet(self.request.POST, instance=self.object)
+            ctx['risposta_form'] = RispostaAutomaticaForm(self.request.POST, self.request.FILES)
         else:
             ctx['campi_formset'] = CampoSitoFormSet(instance=self.object)
+            ctx['risposta_form'] = RispostaAutomaticaForm()
         return ctx
 
     def form_valid(self, form):
         self.object = form.save()
         formset = CampoSitoFormSet(self.request.POST, instance=self.object)
-        if formset.is_valid():
+        risposta_form = RispostaAutomaticaForm(self.request.POST, self.request.FILES)
+        if formset.is_valid() and risposta_form.is_valid():
             formset.save()
+            risposta = risposta_form.save(commit=False)
+            risposta.sito = self.object
+            risposta.save()
             messages.success(self.request, 'Sito creato.')
             return redirect('sito-list')
         return self.render_to_response(self.get_context_data(form=form))
@@ -121,17 +129,29 @@ class SitoUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        risposta_instance = getattr(self.object, 'risposta_automatica', None)
         if self.request.POST:
             ctx['campi_formset'] = CampoSitoFormSet(self.request.POST, instance=self.object)
+            ctx['risposta_form'] = RispostaAutomaticaForm(
+                self.request.POST, self.request.FILES, instance=risposta_instance,
+            )
         else:
             ctx['campi_formset'] = CampoSitoFormSet(instance=self.object)
+            ctx['risposta_form'] = RispostaAutomaticaForm(instance=risposta_instance)
         return ctx
 
     def form_valid(self, form):
         self.object = form.save()
         formset = CampoSitoFormSet(self.request.POST, instance=self.object)
-        if formset.is_valid():
+        risposta_instance = getattr(self.object, 'risposta_automatica', None)
+        risposta_form = RispostaAutomaticaForm(
+            self.request.POST, self.request.FILES, instance=risposta_instance,
+        )
+        if formset.is_valid() and risposta_form.is_valid():
             formset.save()
+            risposta = risposta_form.save(commit=False)
+            risposta.sito = self.object
+            risposta.save()
             messages.success(self.request, 'Sito aggiornato.')
             return redirect('sito-list')
         return self.render_to_response(self.get_context_data(form=form))
@@ -251,6 +271,11 @@ def lead_ingest(request):
         consenso_dati=consenso,
         consenso_dati_il=timezone.now() if consenso else None,
     )
+    if sito is not None:
+        config = getattr(sito, 'risposta_automatica', None)
+        if config is not None and config.attivo:
+            threading.Thread(target=invia_risposta_automatica, args=(lead.id,), daemon=True).start()
+
     return JsonResponse(
         {'id': lead.id, 'nome': lead.nome, 'consenso_dati': lead.consenso_dati},
         status=201,

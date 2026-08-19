@@ -37,6 +37,11 @@ INGEST_TOKEN = os.environ.get('INGEST_TOKEN', '')
 # URL pubblico del Portale FBO, usato solo per il link "torna al Portale".
 PORTAL_PUBLIC_URL = os.environ.get('PORTAL_PUBLIC_URL', '')
 
+# URL pubblico di questa app, usato per costruire l'URL assoluto del logo
+# nelle email di risposta automatica (leads/emailing.py), inviate da un
+# thread in background senza un `request` disponibile.
+PUBLIC_BASE_URL = os.environ.get('PUBLIC_BASE_URL', 'http://localhost:8000').rstrip('/')
+
 
 # Application definition
 
@@ -130,5 +135,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# File caricati dagli utenti (es. logo dei siti per la risposta automatica).
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

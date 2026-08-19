@@ -24,10 +24,16 @@ sudo -u fboleads venv/bin/pip install -r requirements.txt
 cp .env.example .env
 # valorizzare: DJANGO_SECRET_KEY, DJANGO_DEBUG=false,
 # DJANGO_ALLOWED_HOSTS=lead.fbosolution.it,94.177.161.127,127.0.0.1,localhost
-# MASTER_ENCRYPTION_KEY, INTERNAL_API_TOKEN, INGEST_TOKEN, PORTAL_PUBLIC_URL
+# MASTER_ENCRYPTION_KEY, INTERNAL_API_TOKEN, INGEST_TOKEN, PORTAL_PUBLIC_URL,
+# PUBLIC_BASE_URL=https://lead.fbosolution.it (usato per l'URL del logo
+# nelle email di risposta automatica)
 sudo -u fboleads venv/bin/python manage.py migrate
 sudo -u fboleads venv/bin/python manage.py collectstatic --noinput
 sudo -u fboleads venv/bin/python manage.py createsuperuser
+
+# Cartella dei file caricati (logo dei siti per la risposta automatica)
+mkdir -p /opt/fboleads/app/media
+chown fboleads:fboleads /opt/fboleads/app/media
 
 # Nginx deve poter attraversare /opt/fboleads per servire staticfiles/
 chmod 751 /opt/fboleads

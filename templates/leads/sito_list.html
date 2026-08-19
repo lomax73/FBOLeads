@@ -15,6 +15,7 @@
             <th>Dominio</th>
             <th>Attivo</th>
             <th>Campi</th>
+            <th>Risposta auto</th>
             <th>Contatti</th>
             <th></th>
         </tr>
@@ -26,6 +27,7 @@
             <td>{{ sito.dominio|default:"—" }}</td>
             <td>{% if sito.attivo %}✓{% else %}—{% endif %}</td>
             <td>{{ sito.campi.count }}</td>
+            <td>{% if sito.risposta_automatica.attivo %}✓{% else %}—{% endif %}</td>
             <td>{{ sito.lead.count }}</td>
             <td>
                 <a href="{% url 'sito-update' sito.pk %}">Modifica</a>

@@ -81,6 +81,50 @@ class CampoSito(models.Model):
         return f'{self.sito.nome} · {self.key}'
 
 
+class RispostaAutomatica(models.Model):
+    """Configurazione della risposta automatica via email per un Sito.
+
+    Ogni sito ha la propria identità email (mittente + SMTP), il proprio
+    testo/logo/firma. Placeholder disponibili in oggetto/corpo/firma:
+    {{nome}}, {{email}}, {{telefono}}, {{azienda}}, {{messaggio}}, {{sito}}.
+    """
+
+    sito = models.OneToOneField(
+        Sito, on_delete=models.CASCADE, related_name='risposta_automatica',
+    )
+    attivo = models.BooleanField(
+        'Risposta automatica attiva', default=False,
+        help_text='Se disattivata, la configurazione resta salvata ma nessuna email viene inviata.',
+    )
+
+    mittente_nome = models.CharField(max_length=120, blank=True)
+    mittente_email = models.EmailField('Email mittente')
+
+    oggetto = models.CharField(max_length=255, default='Grazie per averci contattato')
+    corpo_html = models.TextField(
+        'Corpo email',
+        blank=True,
+        help_text='Placeholder disponibili: {{nome}}, {{email}}, {{telefono}}, {{azienda}}, {{messaggio}}, {{sito}}.',
+    )
+    logo = models.ImageField('Logo del brand', upload_to='risposte_automatiche/loghi/', blank=True, null=True)
+    firma_html = models.TextField('Firma email', blank=True)
+
+    smtp_host = models.CharField('Host SMTP', max_length=255, blank=True)
+    smtp_port = models.PositiveIntegerField('Porta SMTP', default=587)
+    smtp_user = models.CharField('Utente SMTP', max_length=255, blank=True)
+    smtp_password = EncryptedCharField('Password SMTP', blank=True, null=True)
+    smtp_use_tls = models.BooleanField('Usa STARTTLS', default=True)
+
+    aggiornato_il = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'risposta automatica'
+        verbose_name_plural = 'risposte automatiche'
+
+    def __str__(self):
+        return f'Risposta automatica · {self.sito.nome}'
+
+
 class Lead(models.Model):
     class Stato(models.TextChoices):
         NUOVO = 'nuovo', 'Nuovo'
@@ -121,6 +165,12 @@ class Lead(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='lead_assegnati',
         verbose_name='Assegnato a',
+    )
+    risposta_automatica_inviata_il = models.DateTimeField(
+        'Risposta automatica inviata il', null=True, blank=True,
+    )
+    risposta_automatica_errore = models.CharField(
+        'Errore risposta automatica', max_length=500, blank=True,
     )
     creato_il = models.DateTimeField(auto_now_add=True)
     aggiornato_il = models.DateTimeField(auto_now=True)

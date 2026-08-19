@@ -17,6 +17,15 @@
     </p>
     <p><strong>Ricevuto il:</strong> {{ lead.creato_il|date:"d/m/Y H:i" }}</p>
     <p><strong>Ultima modifica:</strong> {{ lead.aggiornato_il|date:"d/m/Y H:i" }}</p>
+    <p><strong>Risposta automatica:</strong>
+        {% if lead.risposta_automatica_inviata_il %}
+            inviata il {{ lead.risposta_automatica_inviata_il|date:"d/m/Y H:i" }}
+        {% elif lead.risposta_automatica_errore %}
+            <span style="color:#991b1b;">errore — {{ lead.risposta_automatica_errore }}</span>
+        {% else %}
+            —
+        {% endif %}
+    </p>
 </div>
 
 {% if lead.messaggio %}
