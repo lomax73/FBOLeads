@@ -219,6 +219,12 @@ def _sito_per_token(provided):
 
 @csrf_exempt
 def lead_ingest(request):
+    response = _lead_ingest(request)
+    response['Access-Control-Allow-Origin'] = '*'
+    return response
+
+
+def _lead_ingest(request):
     """Endpoint pubblico di raccolta contatti, usato dai form dei siti web.
 
     Attende un POST con header ``X-Ingest-Token``. Il token può essere:
@@ -229,7 +235,18 @@ def lead_ingest(request):
 
     Accetta JSON oppure form-encoded. I campi non riconosciuti e non
     mappati dal template finiscono in ``dati_extra`` per non perdere nulla.
+
+    Espone gli header CORS necessari perché alcuni siti (statici, senza
+    backend proprio) chiamano questo endpoint direttamente dal browser.
     """
+    if request.method == 'OPTIONS':
+        response = JsonResponse({})
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, X-Ingest-Token'
+        response['Access-Control-Max-Age'] = '86400'
+        return response
+
     if request.method != 'POST':
         return JsonResponse({'detail': 'Metodo non consentito.'}, status=405)
 
